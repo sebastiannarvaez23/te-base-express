@@ -1,13 +1,17 @@
 import { config } from "dotenv";
+
+import { logError } from "../core/redaction";
 import { Dialect } from "sequelize";
 import { Sequelize, SequelizeOptions } from "sequelize-typescript";
 
-import { OAuthClientModel } from "../lib-models/auth/o-auth-client.model";
-import { PersonModel } from "../lib-models/user/person.model";
-import { RoleModel } from "../lib-models/security/role.model";
-import { RoleServiceModel } from "../lib-models/security/role-service.model";
-import { ServiceModel } from "../lib-models/security/service.model";
-import { UserModel } from '../lib-models/user/user.model';
+import { AuditEventModel } from "../client/features/logging/system/audit/infrastructure/models/audit-event.model";
+import { AdminModel } from "../platform/features/security/lifecycle/admins/infrastructure/models/admin.model";
+import { OAuthClientModel } from "../client/features/security/lifecycle/auth/infrastructure/models/o-auth-client.model";
+import { PersonModel } from "../client/features/security/identity/profile/infrastructure/models/person.model";
+import { RoleModel } from "../client/features/security/access/roles/infrastructure/models/role.model";
+import { RoleServiceModel } from "../client/features/security/access/roles/infrastructure/models/role-service.model";
+import { ServiceModel } from "../client/features/security/access/services/infrastructure/models/service.model";
+import { UserModel } from '../client/features/security/lifecycle/registration/infrastructure/models/user.model';
 
 config();
 
@@ -34,7 +38,9 @@ export class DatabaseConfig {
                 PersonModel,
                 RoleModel,
                 ServiceModel,
-                RoleServiceModel
+                RoleServiceModel,
+                AuditEventModel,
+                AdminModel,
             ],
         };
         this.sequelize = new Sequelize(name, user, password, databaseOptions);
@@ -49,7 +55,7 @@ export class DatabaseConfig {
             await this.sequelize.sync({ alter: true });
             console.log('Synchronized database and tables');
         } catch (err) {
-            console.error('Error syncing: ', err);
+            logError("Database sync failed", err);
         }
     }
 }

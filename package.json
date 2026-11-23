@@ -1,11 +1,11 @@
 {
-  "name": "dv-idico-api",
+  "name": "te-base-express",
   "version": "1.0.0",
   "description": "Template Base Express",
   "main": "index.js",
   "scripts": {
-    "start": "ts-node src/main.ts",
-    "test": "jest --detectOpenHandles",
+    "start": "ts-node src/app/main.ts",
+    "tests": "jest --detectOpenHandles",
     "build": "npx tsc",
     "migrate": "npx sequelize-cli db:migrate",
     "unmigrate": "npx sequelize-cli db:migrate:undo:all"
@@ -32,7 +32,8 @@
     "redis": "^4.7.0",
     "reflect-metadata": "^0.2.2",
     "sequelize": "^6.37.3",
-    "sequelize-typescript": "^2.1.6"
+    "sequelize-typescript": "^2.1.6",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@types/axios": "^0.14.0",

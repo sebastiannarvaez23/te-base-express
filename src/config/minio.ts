@@ -1,6 +1,8 @@
 import { Client } from 'minio';
 import multer, { StorageEngine } from 'multer';
 
+import { logError } from '../core/redaction';
+
 export class MinioConfig {
 
     private readonly _client: Client;
@@ -28,7 +30,7 @@ export class MinioConfig {
                 console.log(`Bucket "${this._bucketName}" creado correctamente.`);
             }
         } catch (err) {
-            console.error('Error al comprobar o crear el bucket:', err);
+            logError("Bucket check failed", err);
         }
     }
 

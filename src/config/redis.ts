@@ -1,7 +1,8 @@
 import { config } from "dotenv";
 import { createClient } from "redis";
 
-import { HttpError } from "../lib-core/utils/error.util";
+import { logError } from "../core/redaction";
+import { HttpError } from "../core/utils/error.util";
 
 config();
 
@@ -17,7 +18,7 @@ export class RedisConfig {
         this._redisClient = createClient({ url: this._redisUrl });
 
         this._redisClient.on('error', (err: any) => {
-            console.error('Redis Client Error', err);
+            logError("Redis client error", err);
         });
 
         this._redisClient.connect();
@@ -26,13 +27,13 @@ export class RedisConfig {
     async storeTokenInRedis(nickname: string, token: string) {
         const expiryTime = this._SESION_SG_EXP;
         if (isNaN(expiryTime)) {
-            throw new HttpError("000015");
+            throw new HttpError("SRV_001");
         }
 
         await this._redisClient.setEx(nickname, expiryTime, token)
             .catch((err: any) => {
-                console.error('Error storing token in Redis:', err);
-                throw new HttpError("000001");
+                logError("Redis store failed", err);
+                throw new HttpError("SRV_002");
             });
     }
 
@@ -40,8 +41,8 @@ export class RedisConfig {
         try {
             return await this._redisClient.get(nickname);
         } catch (err) {
-            console.error('Error retrieving token from Redis:', err);
-            throw new HttpError("000002");
+            logError("Redis read failed", err);
+            throw new HttpError("SRV_002");
         }
     }
 
@@ -49,21 +50,21 @@ export class RedisConfig {
         try {
             return await this._redisClient.get(`passwordReset:${token}`);
         } catch (err) {
-            console.error('Error retrieving token from Redis:', err);
-            throw new HttpError("000002");
+            logError("Redis read failed", err);
+            throw new HttpError("SRV_002");
         }
     }
 
     async storeResetPassToken(resetToken: string, userId: string) {
-        this._redisClient.set(`passwordReset:${resetToken}`, userId, 'EX', 300);
+        await this._redisClient.setEx(`passwordReset:${resetToken}`, 300, userId);
     }
 
     async deleteToken(nickname: string) {
         try {
             return await this._redisClient.del(nickname);
         } catch (err) {
-            console.error('Error retrieving token from Redis:', err);
-            throw new HttpError("000002");
+            logError("Redis read failed", err);
+            throw new HttpError("SRV_002");
         }
     }
 
@@ -71,12 +72,24 @@ export class RedisConfig {
         try {
             return await this._redisClient.del(`passwordReset:${token}`);
         } catch (err) {
-            console.error('Error retrieving token from Redis:', err);
-            throw new HttpError("000002");
+            logError("Redis read failed", err);
+            throw new HttpError("SRV_002");
         }
     }
 
     public closeConn() {
         this._redisClient.quit();
+    }
+
+    async setRaw(key: string, value: string, ttlSeconds: number): Promise<void> {
+        await this._redisClient.setEx(key, ttlSeconds, value);
+    }
+
+    async getRaw(key: string): Promise<string | null> {
+        return this._redisClient.get(key);
+    }
+
+    async deleteRaw(key: string): Promise<void> {
+        await this._redisClient.del(key);
     }
 }

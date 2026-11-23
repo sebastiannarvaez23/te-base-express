@@ -1,4 +1,4 @@
-const { EncryptionUtil } = require('../dist/lib-core/utils/encryption.util');
+const { EncryptionUtil } = require('../dist/core/utils/encryption.util');
 
 const { createTableOAuthClients } = require('./tables/oauth-clients.js');
 const { createTablePersons } = require('./tables/persons.js');
